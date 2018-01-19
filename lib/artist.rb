@@ -1,40 +1,42 @@
-require 'pry'
-
 class Artist
-  extend Concerns::Findable
-  attr_accessor :name, :songs
+    extend Concerns::Findable
 
+  attr_accessor :name, :songs
   @@all = []
 
+  # Instance Methods
   def initialize(name)
-    @name = name
+    self.name = name
     @songs = []
   end
 
+  def save
+    self.class.all << self
+  end
+
+  def add_song(song)
+    self.songs << song unless self.songs.include?(song)
+    song.artist = self if song.artist.nil?
+  end
+
+  def songs
+    @songs
+  end
+
+  def genres
+    self.songs.collect {|s| s.genre}.uniq
+  end
+
+  #  Class Methods
   def self.all
     @@all
   end
 
   def self.destroy_all
-    @@all.clear
-  end
-
-  def save
-    @@all << self
+    self.all.clear
   end
 
   def self.create(name)
-    artist = Artist.new(name)
-    artist.save
-    artist
-  end
-
-  def add_song(song)
-    self.songs << song unless self.songs.include?(song)
-    song.artist = self unless song.artist == self
-  end
-
-  def genres
-    self.songs.collect{|song| song.genre}.uniq
+    song = Artist.new(name).tap{|a| a.save}
   end
 end
